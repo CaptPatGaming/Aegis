@@ -62,5 +62,21 @@ class playerShip:
                 self.vel.scale_to_length(self.max_speed)
             #Update postion around W_WIDTH
             self.pos.x = (self.pos.x + self.vel.x) % WORLD_WIDTH
-            
+            self.pos.y = max(top_bound, min(bottom_bound, self.pos.y + self.vel.y))
                 
+        def draw(self, surface: pygame.Surface, camera_x: float):
+            screen_x = SCREEN_WIDTH / 2 + wrap_delta(self.pos.x, camera_x)
+            screen_y = self.pos.y
+                
+            # Vector ship vertices oriented to self.facing
+            nose = (screen_x + (self.width / 2) * self.facing, screen_y)
+            top_wing = (screen_x - (self.width / 2) * self.facing, screen_y - self.height / 2)
+            notch = (screen_x - (self.width / 4) * self.facing, screen_y)
+                
+            # Draw thruster flame when moving fast
+            if self.vel.length() > 1.5:
+                flame_len = random.uniform(10, 22)
+                flame_tip = (screen_x - (self.width / 2 + flame_len) * self.facing, screen_y)
+                pygame.draw.polygon(surface, THRUST_COLOR, [top_wing, notch, bottom_wing, flame_tip])
+                
+        
