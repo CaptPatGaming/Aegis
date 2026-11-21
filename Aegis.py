@@ -71,6 +71,7 @@ class playerShip:
             # Vector ship vertices oriented to self.facing
             nose = (screen_x + (self.width / 2) * self.facing, screen_y)
             top_wing = (screen_x - (self.width / 2) * self.facing, screen_y - self.height / 2)
+            bottom_wing = (screen_x - (self.width / 2) * self.facing, screen_y + self.height / 2 )
             notch = (screen_x - (self.width / 4) * self.facing, screen_y)
                 
             # Draw thruster flame when moving fast
@@ -78,5 +79,7 @@ class playerShip:
                 flame_len = random.uniform(10, 22)
                 flame_tip = (screen_x - (self.width / 2 + flame_len) * self.facing, screen_y)
                 pygame.draw.polygon(surface, THRUST_COLOR, [top_wing, notch, bottom_wing, flame_tip])
-                
+
         
+        # Draw ship hull
+                pygame.draw.polygon(surface, SHIP_COLOR, [nose, top_wing, notch, bottom_wing], width=2)
