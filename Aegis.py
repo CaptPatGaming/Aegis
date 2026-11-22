@@ -11,6 +11,7 @@ FPS = 60
 BG_COLOR = (8, 10, 18)
 SHIP_COLOR = (0, 255, 220)
 THRUST_COLOR = (255, 100, 50)
+TERRAIN_COLOR = (40)
 TERRAIN_GLOW = (15, 70, 45)
 HUD_BG = (15, 18, 30)
 HUD_BORDER = (0, 180, 160)
@@ -83,3 +84,56 @@ class playerShip:
         
         # Draw ship hull
                 pygame.draw.polygon(surface, SHIP_COLOR, [nose, top_wing, notch, bottom_wing], width=2)
+
+
+class worldBackdrop:
+    def __init__(self, radar_height: int):
+        self.radar_height = radar_height
+        # Generate looping starfield (x, y, parallax_factor, brightness)
+        self.stars = [
+            (
+                random.uniform(0, WORLD_WIDTH),
+                random.uniform(radar_height + 10, SCREEN_HEIGHT - 120),
+                random.choice([0.3, 0.6, 1.0]),
+                random.randint(90, 220),
+            )
+            for _ in range(140)
+        ]
+
+        # Generate seamless procedural mountain peaks across WORLD_WIDTH
+        self.segment_width = 75
+        num_segments = WORLD_WIDTH // self.segment_width
+        self.terrain_points = []
+        for i in range(num_segments):
+            x = i * self.segment_width
+            y = SCREEN_HEIGHT - random.randint(45, 130)
+            self.terrain_points.append((x, y))
+
+    def draw(self, surface: pygame.Surface, camera_x: float):
+        # 1. Draw Parallax Stars
+        for star_x, star_y, parallax, brightness in self.stars:
+            # Apply parallax relative to camera movement
+            effective_cam = (camera_x * parallax) % WORLD_WIDTH
+            sx = SCREEN_WIDTH / 2 + wrap_delta(star_x, effective_cam)
+            if 0 <= sx <= SCREEN_WIDTH:
+                color = (brightness, brightness, min(255, brightness + 30))
+                size = 2 if parallax == 1.0 else 1
+                pygame.draw.rect(surface, color, (sx, star_y, size, size))
+
+        # 2. Draw Seamless Wrapping Vector Terrain
+        visible_points = []
+        for world_x, world_y in self.terrain_points:
+            sx = SCREEN_WIDTH / 2 + wrap_delta(world_x, camera_x)
+            # Only collect points near or inside the screen viewport
+            if -self.segment_width * 2 <= sx <= SCREEN_WIDTH + self.segment_width * 2:
+                visible_points.append((sx, world_y))
+
+        # Sort left-to-right on screen so the line connects cleanly across the wrap seam
+        visible_points.sort(key=lambda p: p[0])
+
+        if len(visible_points) >= 2:
+            # Subtle glow pass underneath
+            glow_points = [(x, y + 3) for x, y in visible_points]
+            pygame.draw.lines(surface, TERRAIN_GLOW, False, glow_points, width=5)
+            # Sharp vector top ridge
+            pygame.draw.lines(surface, TERRAIN_COLOR, False, visible_points, width=2)
