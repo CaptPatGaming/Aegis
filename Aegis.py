@@ -137,3 +137,37 @@ class worldBackdrop:
             pygame.draw.lines(surface, TERRAIN_GLOW, False, glow_points, width=5)
             # Sharp vector top ridge
             pygame.draw.lines(surface, TERRAIN_COLOR, False, visible_points, width=2)
+
+
+            
+
+    def draw_scanner_hud(surface: pygame.Surface, player: playerShip, camera_x: float, radar_height: int):
+        # Top HUD bar background
+        pygame.draw.rect(surface, HUD_BG, (0, 0, SCREEN_WIDTH, radar_height))
+        pygame.draw.line(surface, HUD_BORDER, (0, radar_height), (SCREEN_WIDTH, radar_height), 2)
+
+    # Radar box centered at top
+        radar_w = 500
+        radar_h = radar_height - 16
+        radar_x = (SCREEN_WIDTH - radar_w) // 2
+        radar_y = 8
+        pygame.draw.rect(surface, (10, 14, 24), (radar_x, radar_y, radar_w, radar_h))
+        pygame.draw.rect(surface, HUD_BORDER, (radar_x, radar_y, radar_w, radar_h), 1)
+
+    # Draw camera viewport indicator inside radar
+        view_w = (SCREEN_WIDTH / WORLD_WIDTH) * radar_w
+        cam_radar_x = radar_x + ((camera_x - SCREEN_WIDTH / 2) % WORLD_WIDTH) / WORLD_WIDTH * radar_w
+
+    # Handle viewport box splitting when crossing the radar edge
+        if cam_radar_x + view_w <= radar_x + radar_w:
+            pygame.draw.rect(surface, (40, 70, 90), (cam_radar_x, radar_y + 1, view_w, radar_h - 2), 1)
+        else:
+            right_part = (radar_x + radar_w) - cam_radar_x
+            left_part = view_w - right_part
+            pygame.draw.rect(surface, (40, 70, 90), (cam_radar_x, radar_y + 1, right_part, radar_h - 2), 1)
+            pygame.draw.rect(surface, (40, 70, 90), (radar_x, radar_y + 1, left_part, radar_h - 2), 1)
+
+    # Draw Player blip on radar
+        px = radar_x + (player.pos.x / WORLD_WIDTH) * radar_w
+        py = radar_y + ((player.pos.y - radar_height) / (SCREEN_HEIGHT - radar_height)) * radar_h
+        pygame.draw.circle(surface, SHIP_COLOR, (int(px), int(py)), 3)
