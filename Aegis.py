@@ -139,7 +139,7 @@ class worldBackdrop:
             pygame.draw.lines(surface, TERRAIN_COLOR, False, visible_points, width=2)
 
 
-            
+
 
     def draw_scanner_hud(surface: pygame.Surface, player: playerShip, camera_x: float, radar_height: int):
         # Top HUD bar background
@@ -171,3 +171,25 @@ class worldBackdrop:
         px = radar_x + (player.pos.x / WORLD_WIDTH) * radar_w
         py = radar_y + ((player.pos.y - radar_height) / (SCREEN_HEIGHT - radar_height)) * radar_h
         pygame.draw.circle(surface, SHIP_COLOR, (int(px), int(py)), 3)
+        
+    def main():
+        pygame.init()
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Aegis Horizon — Week 1 Prototype")
+        clock = pygame.time.Clock()
+        font = pygame.font.SysFont("consolas", 16)
+
+        radar_height = 70
+        player = playerShip(WORLD_WIDTH / 2, SCREEN_HEIGHT / 2)
+        backdrop = worldBackdrop(radar_height)
+        camera_x = player.pos.x
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    running = False
+            keys = pygame.key.get_pressed()
+            player.update(keys, top_bound=radar_height + 20, bottom_bound=SCREEN_HEIGHT - 30)
